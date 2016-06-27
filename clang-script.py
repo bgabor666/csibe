@@ -19,7 +19,7 @@ def checkout_svn(url, path):
     return subprocess.call(
                ["svn",
                 "co",
-                clang_svn_url,
+                url,
                 path])
 
 def run_llvm_cmake(llvm_path, build_path):
@@ -27,8 +27,8 @@ def run_llvm_cmake(llvm_path, build_path):
         os.makedirs(build_path)
     return subprocess.call(
                ["cmake",
-                llvm_path,
                 "-DCMAKE_BUILD_TYPE=Release",
+                llvm_path,
                 "-B{}".format(build_path)])
 
 def run_llvm_build(build_path):
@@ -38,7 +38,7 @@ def run_llvm_build(build_path):
 
 if __name__ == "__main__":
     checkout_llvm("llvm")
-    #checkout_clang("llvm/tools/clang")
+    checkout_clang("llvm/tools/clang")
     run_llvm_cmake("llvm", "build")
     run_llvm_build("build")
     
