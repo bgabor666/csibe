@@ -88,13 +88,14 @@ class CSiBEBuilder(object):
              "size"])
 
 
-def submodule_init_and_update(repository_path):
+def submodule_init_and_update(repository_path, submodule_path):
     init_return_value = subprocess.call(
                             ["git",
                              "-C",
                              repository_path,
                              "submodule",
-                             "init"])
+                             "init",
+                             submodule_path])
 
     if init_return_value:
         sys.stdout.write("Warning: Failed to execute git submodule init.")
@@ -105,7 +106,8 @@ def submodule_init_and_update(repository_path):
                                "-C",
                                repository_path,
                                "submodule",
-                               "update"])
+                               "update",
+                               submodule_path])
 
     if update_return_value:
         sys.stdout.write("Warning: Failed to execute git submodule update.")
@@ -146,18 +148,19 @@ def download_old_testbed(version):
 
 if __name__ == "__main__":
 
+    csibe_path = os.path.dirname(os.path.realpath(__file__))
     old_csibe_version = "CSiBE-v2.1.1"
 
     toolchains = ["native"]
-    for item in os.listdir("toolchain-files"):
+    for item in os.listdir(os.path.join(csibe_path, "toolchain-files")):
         if item.endswith(".cmake"):
             toolchains.append(item[:-6])
 
     projects = []
-    for item in os.listdir("src"):
+    for item in os.listdir(os.path.join(csibe_path, "src")):
         if item == old_csibe_version:
             continue
-        if os.path.isdir(os.path.join("gen", item)):
+        if os.path.isdir(os.path.join(csibe_path, "gen", item)):
             projects.append(item)
     projects.append(old_csibe_version)
 
@@ -237,8 +240,6 @@ if __name__ == "__main__":
     if args.globalflags:
         global_flags.append(args.globalflags)
 
-    csibe_path = os.path.dirname(os.path.realpath(__file__))
-
     if args.clang_trunk:
         llvm_checkout_result = clang_script.checkout_llvm(os.path.join(csibe_path, "src", "llvm"))
         if llvm_checkout_result:
@@ -263,8 +264,6 @@ if __name__ == "__main__":
             os.getenv("CSiBE_DEBUG_FILE", \
                       os.path.join(os.path.abspath(args.build_dir), "csibe-debug.log"))
 
-    submodule_init_and_update(csibe_path)
-
     # Target selection
     targets_to_build = []
     for opt in args.option:
@@ -283,6 +282,10 @@ if __name__ == "__main__":
         if opt in projects:
             if opt == old_csibe_version:
                 download_old_testbed(old_csibe_version)
+            if opt == "CMSIS":
+                submodule_init_and_update(csibe_path, os.path.join(csibe_path, "src", "CMSIS"))
+            if opt == "servo":
+                submodule_init_and_update(csibe_path, os.path.join(csibe_path, "src", "servo"))
             projects_to_build.append(opt)
 
     for target in targets_to_build:
