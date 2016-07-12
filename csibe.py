@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import tarfile
+from string import Template
 import textwrap
 import urllib2
 
@@ -145,6 +146,17 @@ def download_old_testbed(version):
 
         sys.stdout.write("Done extracting {}.\n".format(version))
 
+def generate_toolchain(template_path, toolchain_path, cc_path, cxx_path):
+    with open(template_path, 'r') as input_file:
+        with open(toolchain_path, 'w') as output_file:
+            input_file_as_string = input_file.read()
+            input_file_as_template = Template(input_file_as_string)
+
+            output_file_as_string = input_file_as_template.safe_substitute(
+                                        c_compiler_path=cc_path,
+                                        cpp_compiler_path=cxx_path)
+            output_file.write(output_file_as_string)
+
 
 if __name__ == "__main__":
 
@@ -265,7 +277,14 @@ if __name__ == "__main__":
                     sys.exit(llvm_cmake_result)
 
                 llvm_build_result = clang_script.run_llvm_build(os.path.join(args.build_dir, "clang-trunk"))
-                sys.exit(llvm_build_result)
+
+                if llvm_build_result:
+                    sys.exit(llvm_build_result)
+
+                generate_toolchain(os.path.join(csibe_path, "gen", "toolchain-templates", "{}.cmake.template".format(opt)),
+                                   os.path.join(csibe_path, "toolchain-files", "{}.cmake".format(opt)),
+                                   os.path.join(os.path.abspath(args.build_dir), "clang-trunk", "bin", "clang"),
+                                   os.path.join(os.path.abspath(args.build_dir), "clang-trunk", "bin", "clang++"))
 
             targets_to_build.append(opt)
 
