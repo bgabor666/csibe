@@ -254,20 +254,20 @@ if __name__ == "__main__":
                 if llvm_checkout_result:
                     sys.exit(llvm_checkout_result)
 
-            clang_checkout_result = clang_script.checkout_clang(os.path.join(csibe_path, "src", "llvm", "tools", "clang"))
+                clang_checkout_result = clang_script.checkout_clang(os.path.join(csibe_path, "src", "llvm", "tools", "clang"))
 
-            if clang_checkout_result:
-                sys.exit(clang_checkout_result)
+                if clang_checkout_result:
+                    sys.exit(clang_checkout_result)
 
-            llvm_cmake_result = clang_script.run_llvm_cmake(os.path.join(csibe_path, "src", "llvm"), os.path.join(args.build_dir, "clang-trunk"))
+                llvm_cmake_result = clang_script.run_llvm_cmake(os.path.join(csibe_path, "src", "llvm"), os.path.join(args.build_dir, "clang-trunk"))
 
-            if llvm_cmake_result:
-                sys.exit(llvm_cmake_result)
+                if llvm_cmake_result:
+                    sys.exit(llvm_cmake_result)
 
-            llvm_build_result = clang_script.run_llvm_build(os.path.join(args.build_dir, "clang-trunk"))
-            sys.exit(llvm_build_result)
+                llvm_build_result = clang_script.run_llvm_build(os.path.join(args.build_dir, "clang-trunk"))
+                sys.exit(llvm_build_result)
 
-        targets_to_build.append(opt)
+            targets_to_build.append(opt)
 
     if not targets_to_build:
         if args.build_all:
