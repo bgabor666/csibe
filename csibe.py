@@ -5,8 +5,11 @@ import os
 import subprocess
 import sys
 import tarfile
+from string import Template
 import textwrap
 import urllib2
+
+import clang_script
 
 class CSiBEBuilder(object):
 
@@ -86,13 +89,14 @@ class CSiBEBuilder(object):
              "size"])
 
 
-def submodule_init_and_update(repository_path):
+def submodule_init_and_update(repository_path, submodule_path):
     init_return_value = subprocess.call(
                             ["git",
                              "-C",
                              repository_path,
                              "submodule",
-                             "init"])
+                             "init",
+                             submodule_path])
 
     if init_return_value:
         sys.stdout.write("Warning: Failed to execute git submodule init.")
@@ -103,7 +107,8 @@ def submodule_init_and_update(repository_path):
                                "-C",
                                repository_path,
                                "submodule",
-                               "update"])
+                               "update",
+                               submodule_path])
 
     if update_return_value:
         sys.stdout.write("Warning: Failed to execute git submodule update.")
@@ -141,21 +146,37 @@ def download_old_testbed(version):
 
         sys.stdout.write("Done extracting {}.\n".format(version))
 
+def generate_toolchain(template_path, toolchain_path, cc_path, cxx_path):
+    with open(template_path, 'r') as input_file:
+        with open(toolchain_path, 'w') as output_file:
+            input_file_as_string = input_file.read()
+            input_file_as_template = Template(input_file_as_string)
+
+            output_file_as_string = input_file_as_template.safe_substitute(
+                                        c_compiler_path=cc_path,
+                                        cpp_compiler_path=cxx_path)
+            output_file.write(output_file_as_string)
+
 
 if __name__ == "__main__":
 
+    csibe_path = os.path.dirname(os.path.realpath(__file__))
     old_csibe_version = "CSiBE-v2.1.1"
 
     toolchains = ["native"]
-    for item in os.listdir("toolchain-files"):
+    for item in os.listdir(os.path.join(csibe_path, "toolchain-files")):
         if item.endswith(".cmake"):
             toolchains.append(item[:-6])
 
+    for item in os.listdir(os.path.join(csibe_path, "gen", "toolchain-templates")):
+        if item.endswith(".cmake.template"):
+            toolchains.append(item[:-15])
+
     projects = []
-    for item in os.listdir("src"):
+    for item in os.listdir(os.path.join(csibe_path, "src")):
         if item == old_csibe_version:
             continue
-        if os.path.isdir(os.path.join("gen", item)):
+        if os.path.isdir(os.path.join(csibe_path, "gen", item)):
             projects.append(item)
     projects.append(old_csibe_version)
 
@@ -230,20 +251,41 @@ if __name__ == "__main__":
     if args.globalflags:
         global_flags.append(args.globalflags)
 
-    csibe_path = os.path.dirname(os.path.realpath(__file__))
-
     if args.debug:
         os.environ["CSiBE_DEBUG"] = os.getenv("CSiBE_DEBUG", "1")
         os.environ["CSiBE_DEBUG_FILE"] = \
             os.getenv("CSiBE_DEBUG_FILE", \
                       os.path.join(os.path.abspath(args.build_dir), "csibe-debug.log"))
 
-    submodule_init_and_update(csibe_path)
-
     # Target selection
     targets_to_build = []
     for opt in args.option:
         if opt in toolchains:
+            if opt.startswith("clang-trunk"):
+                llvm_checkout_result = clang_script.checkout_llvm(os.path.join(csibe_path, "src", "llvm"))
+                if llvm_checkout_result:
+                    sys.exit(llvm_checkout_result)
+
+                clang_checkout_result = clang_script.checkout_clang(os.path.join(csibe_path, "src", "llvm", "tools", "clang"))
+
+                if clang_checkout_result:
+                    sys.exit(clang_checkout_result)
+
+                llvm_cmake_result = clang_script.run_llvm_cmake(os.path.join(csibe_path, "src", "llvm"), os.path.join(args.build_dir, "clang-trunk"))
+
+                if llvm_cmake_result:
+                    sys.exit(llvm_cmake_result)
+
+                llvm_build_result = clang_script.run_llvm_build(os.path.join(args.build_dir, "clang-trunk"))
+
+                if llvm_build_result:
+                    sys.exit(llvm_build_result)
+
+                generate_toolchain(os.path.join(csibe_path, "gen", "toolchain-templates", "{}.cmake.template".format(opt)),
+                                   os.path.join(csibe_path, "toolchain-files", "{}.cmake".format(opt)),
+                                   os.path.join(os.path.abspath(args.build_dir), "clang-trunk", "bin", "clang"),
+                                   os.path.join(os.path.abspath(args.build_dir), "clang-trunk", "bin", "clang++"))
+
             targets_to_build.append(opt)
 
     if not targets_to_build:
@@ -258,6 +300,10 @@ if __name__ == "__main__":
         if opt in projects:
             if opt == old_csibe_version:
                 download_old_testbed(old_csibe_version)
+            if opt == "CMSIS":
+                submodule_init_and_update(csibe_path, os.path.join(csibe_path, "src", "CMSIS"))
+            if opt == "servo":
+                submodule_init_and_update(csibe_path, os.path.join(csibe_path, "src", "servo"))
             projects_to_build.append(opt)
 
     for target in targets_to_build:
