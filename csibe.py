@@ -259,9 +259,10 @@ if __name__ == "__main__":
 
     # Target selection
     targets_to_build = []
+    clang_needed = True
     for opt in args.option:
         if opt in toolchains:
-            if opt.startswith("clang-trunk"):
+            if opt.startswith("clang-trunk") and clang_needed:
                 llvm_checkout_result = clang_script.checkout_llvm(os.path.join(csibe_path, "src", "llvm"))
                 if llvm_checkout_result:
                     sys.exit(llvm_checkout_result)
@@ -276,10 +277,12 @@ if __name__ == "__main__":
                 if llvm_cmake_result:
                     sys.exit(llvm_cmake_result)
 
-                llvm_build_result = clang_script.run_llvm_build(os.path.join(args.build_dir, "clang-trunk"))
+                llvm_build_result = clang_script.run_llvm_build(os.path.join(args.build_dir, "clang-trunk"), threads=4)
 
                 if llvm_build_result:
                     sys.exit(llvm_build_result)
+
+                clang_needed = False
 
                 generate_toolchain(os.path.join(csibe_path, "gen", "toolchain-templates", "{}.cmake.template".format(opt)),
                                    os.path.join(csibe_path, "toolchain-files", "{}.cmake".format(opt)),

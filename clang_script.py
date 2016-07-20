@@ -31,10 +31,11 @@ def run_llvm_cmake(llvm_path, build_path):
                 llvm_path,
                 "-B{}".format(build_path)])
 
-def run_llvm_build(build_path):
+def run_llvm_build(build_path, threads=1):
     return subprocess.call(
                ["make",
-                "-C{}".format(build_path)])
+                "-C{}".format(build_path),
+                "-j{}".format(threads)])
 
 if __name__ == "__main__":
     checkout_llvm("llvm")
