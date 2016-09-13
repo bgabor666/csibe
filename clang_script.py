@@ -31,7 +31,7 @@ def run_llvm_cmake(llvm_path, build_path):
                 llvm_path,
                 "-B{}".format(build_path)])
 
-def run_llvm_build(build_path, threads=1):
+def run_llvm_build(build_path, threads=10):
     return subprocess.call(
                ["make",
                 "-C{}".format(build_path),
