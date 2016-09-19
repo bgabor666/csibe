@@ -1,0 +1,6 @@
+set(CMAKE_C_COMPILER ${c_compiler_path})
+set(CMAKE_CXX_COMPILER ${cpp_compiler_path})
+
+set(NATIVE_FLAGS "-Os")
+set(CMAKE_C_FLAGS "${NATIVE_FLAGS}" CACHE STRING "" FORCE)
+set(CMAKE_CXX_FLAGS "${NATIVE_FLAGS}" CACHE STRING "" FORCE)

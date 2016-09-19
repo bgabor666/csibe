@@ -1,2 +1,0 @@
-set(CMAKE_C_COMPILER ${c_compiler_path})
-set(CMAKE_CXX_COMPILER ${cpp_compiler_path})
