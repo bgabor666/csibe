@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import os
 from string import Template
 
 def generate_toolchain(template_path, toolchain_path, cc_path, cxx_path):
@@ -26,5 +27,5 @@ if __name__ == "__main__":
 
     generate_toolchain(args.template_path,
                        args.toolchain_path,
-                       args.cc_path,
-                       args.cxx_path)
+                       os.path.abspath(args.cc_path),
+                       os.path.abspath(args.cxx_path))
