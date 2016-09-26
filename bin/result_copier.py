@@ -16,10 +16,20 @@ def copy_result_files(result_origin_dir, csibe_results_path, llvm_revision):
         if not os.path.isdir(target_dir):
             os.makedirs(target_dir)
 
+        target_file = os.path.join(target_dir, "{}-{}-r{}-results.csv".format(date_with_dashes, subdir, llvm_revision))
         shutil.copyfile(os.path.join(result_origin_dir, subdir, "all_results.csv"),
-                        os.path.join(target_dir, "{}-{}-r{}-results.csv".format(date_with_dashes, subdir, llvm_revision)))
+                        target_file)
 
-        print "{}-{}-r{}".format(date_with_dashes, subdir, llvm_revision)
+        f = open(target_file, "r")
+        contents = f.readlines()
+        f.close()
+
+        contents.insert(4, "Revision,{}\n".format(llvm_revision))
+
+        f = open(target_file, "w")
+        contents = "".join(contents)
+        f.write(contents)
+        f.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
