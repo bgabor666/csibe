@@ -31,6 +31,7 @@ def copy_result_files(result_origin_dir, csibe_results_path, llvm_revision):
         f.write(contents)
         f.close()
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--result-origin-dir")
@@ -42,3 +43,24 @@ if __name__ == "__main__":
     llvm_revision = subprocess.check_output(["svnversion", args.llvm_svn_path])
 
     copy_result_files(args.result_origin_dir, args.csibe_results_path, llvm_revision.rstrip())
+
+    subprocess.call(
+       ["git",
+        "-C",
+        args.csibe_results_path,
+        "add",
+        "--all"])
+
+    subprocess.call(
+       ["git",
+        "-C",
+        args.csibe_results_path,
+        "commit",
+        "-m",
+        "Add results for r{}".format(llvm_revision.rstrip())])
+
+    subprocess.call(
+       ["git",
+        "-C",
+        args.csibe_results_path,
+        "push"])
