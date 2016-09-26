@@ -44,23 +44,32 @@ if __name__ == "__main__":
 
     copy_result_files(args.result_origin_dir, args.csibe_results_path, llvm_revision.rstrip())
 
-    subprocess.call(
-       ["git",
-        "-C",
-        args.csibe_results_path,
-        "add",
-        "--all"])
+    git_add_return_value = subprocess.call(
+                              ["git",
+                               "-C",
+                               args.csibe_results_path,
+                               "add",
+                               "--all"])
 
-    subprocess.call(
-       ["git",
-        "-C",
-        args.csibe_results_path,
-        "commit",
-        "-m",
-        "Add results for r{}".format(llvm_revision.rstrip())])
+    if git_add_return_value:
+        return git_add_return_value
 
-    subprocess.call(
-       ["git",
-        "-C",
-        args.csibe_results_path,
-        "push"])
+    git_commit_return_value = subprocess.call(
+                                 ["git",
+                                  "-C",
+                                  args.csibe_results_path,
+                                  "commit",
+                                  "-m",
+                                  "Add results for r{}".format(llvm_revision.rstrip())])
+
+    if git_commit_return_value:
+        return git_commit_return_value
+
+    git_push_return_value = subprocess.call(
+                               ["git",
+                                "-C",
+                                args.csibe_results_path,
+                                "push"])
+
+    if git_push_return_value:
+        return git_push_return_value
