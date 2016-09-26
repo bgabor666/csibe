@@ -4,6 +4,7 @@ import argparse
 import os
 import shutil
 import subprocess
+import sys
 import time
 
 # TODO: Insert LLVM and Clang revision numbers to the destination file
@@ -52,7 +53,7 @@ if __name__ == "__main__":
                                "--all"])
 
     if git_add_return_value:
-        return git_add_return_value
+        sys.exit(git_add_return_value)
 
     git_commit_return_value = subprocess.call(
                                  ["git",
@@ -63,7 +64,7 @@ if __name__ == "__main__":
                                   "Add results for r{}".format(llvm_revision.rstrip())])
 
     if git_commit_return_value:
-        return git_commit_return_value
+        sys.exit(git_commit_return_value)
 
     git_push_return_value = subprocess.call(
                                ["git",
@@ -72,4 +73,4 @@ if __name__ == "__main__":
                                 "push"])
 
     if git_push_return_value:
-        return git_push_return_value
+        sys.exit(git_push_return_value)
