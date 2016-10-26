@@ -7,10 +7,18 @@ import subprocess
 import sys
 import time
 
-# TODO: Insert LLVM and Clang revision numbers to the destination file
 def copy_result_files(result_origin_dir, csibe_results_path, llvm_revision):
     date_as_path = time.strftime("%Y/%m")
     date_with_dashes = time.strftime("%Y-%m-%d")
+
+    json_dir = os.path.join(csibe_results_path, 'daily-results', date_as_path)
+    json_result_file_path = os.path.join(json_dir, '{}-results.json'.format(date_with_dashes))
+
+    csv_to_json_path = os.path.join(csibe_results_path, 'bin', 'csibe_csv_to_json.py')
+
+    if not os.path.isdir(json_dir):
+        os.makedirs(json_dir)
+
     for subdir in os.listdir(result_origin_dir):
         target_dir = os.path.join(csibe_results_path, subdir, date_as_path)
 
@@ -31,6 +39,8 @@ def copy_result_files(result_origin_dir, csibe_results_path, llvm_revision):
         contents = "".join(contents)
         f.write(contents)
         f.close()
+
+        subprocess.call(['python', csv_to_json_path, '--csv-path', target_file, '--json-path', json_result_file_path])
 
 
 if __name__ == "__main__":
