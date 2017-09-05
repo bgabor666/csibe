@@ -19,6 +19,25 @@ function(adopt_subprojects)
         set(CMSIS_BASE_DIR ${CSiBE_SRC_DIR}/CMSIS PARENT_SCOPE)
     endif()
 
+    # Add subprojects for CMSIS_5
+    set(CMSIS_5_PROJECT_NAME "CMSIS_5")
+    if (";${SUBPROJECTS};" MATCHES ";${CMSIS_5_PROJECT_NAME};")
+        list(REMOVE_ITEM SUBPROJECTS ${CMSIS_5_PROJECT_NAME})
+        list(APPEND SUBPROJECTS
+                CMSIS_5/BasicMathFunctions
+                CMSIS_5/CommonTables
+                CMSIS_5/ComplexMathFunctions
+                CMSIS_5/ControllerFunctions
+                CMSIS_5/FastMathFunctions
+                CMSIS_5/FilteringFunctions
+                CMSIS_5/MatrixFunctions
+                CMSIS_5/StatisticsFunctions
+                CMSIS_5/SupportFunctions
+                CMSIS_5/TransformFunctions)
+        set(SUBPROJECTS ${SUBPROJECTS} PARENT_SCOPE)
+        set(CMSIS_5_BASE_DIR ${CSiBE_SRC_DIR}/CMSIS_5 PARENT_SCOPE)
+    endif()
+
     # Add subprojects for old CSiBE testbed
     set(OLD_CSIBE_PROJECT_NAME "CSiBE-v2.1.1")
     if (";${SUBPROJECTS};" MATCHES ";${OLD_CSIBE_PROJECT_NAME};")

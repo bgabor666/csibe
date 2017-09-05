@@ -26,6 +26,12 @@ if (NOT DEFINED ENV{CSiBE_SUBPROJECTS})
     list (APPEND SUBPROJECTS "CMSIS")
   endif ()
 
+  # Add CMSIS_5 project subprojects
+  # 'Generic' CMAKE_SYSTEM_NAME means 'an embedded system without OS' here.
+  if ((CMAKE_SYSTEM_NAME STREQUAL "Generic"))
+    list (APPEND SUBPROJECTS "CMSIS_5")
+  endif ()
+
   # Add flex project except on embedded
   if ((NOT CMAKE_SYSTEM_NAME MATCHES "Generic"))
     list (APPEND SUBPROJECTS "flex-2.6.0")

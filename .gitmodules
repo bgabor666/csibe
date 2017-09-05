@@ -4,3 +4,6 @@
 [submodule "src/servo"]
 	path = src/servo
 	url = https://github.com/servo/servo.git
+[submodule "src/CMSIS_5"]
+	path = src/CMSIS_5
+	url = https://github.com/ARM-software/CMSIS_5.git

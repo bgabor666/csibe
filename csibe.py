@@ -259,6 +259,8 @@ if __name__ == "__main__":
                 download_old_testbed(old_csibe_version)
             if opt == "CMSIS":
                 submodule_init_and_update(csibe_path, os.path.join(csibe_path, "src", "CMSIS"))
+            if opt == "CMSIS_5":
+                submodule_init_and_update(csibe_path, os.path.join(csibe_path, "src", "CMSIS_5"))
             if opt == "servo":
                 submodule_init_and_update(csibe_path, os.path.join(csibe_path, "src", "servo"))
             projects_to_build.append(opt)
